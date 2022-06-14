@@ -97,6 +97,25 @@ static PyObject *astar(PyObject *self, PyObject *args) {
 
     int row = cur.idx / w;
     int col = cur.idx % w;
+    // adding increased costs for diagonals
+    // for positions of:
+    // 0 1 2
+    // 3   4
+    // 5 6 7
+    // and heuristic costs of: (approximating sqrt(2) to 2 sig figs)
+    // 14 10 14
+    // 10    10
+    // 14 10 14
+    int* dir_costs = new int[8];
+    dir_costs[0] = 14;
+    dir_costs[1] = 10;
+    dir_costs[2] = 14;
+    dir_costs[3] = 10;
+    dir_costs[4] = 10;
+    dir_costs[5] = 14;
+    dir_costs[6] = 10;
+    dir_costs[7] = 14;
+
     // check bounds and find up to eight neighbors: top to bottom, left to right
     nbrs[0] = (diag_ok && row > 0 && col > 0)          ? cur.idx - w - 1   : -1;
     nbrs[1] = (row > 0)                                ? cur.idx - w       : -1;
@@ -111,7 +130,7 @@ static PyObject *astar(PyObject *self, PyObject *args) {
     for (int i = 0; i < 8; ++i) {
       if (nbrs[i] >= 0) {
         // the sum of the cost so far and the cost of this move
-        float new_cost = costs[cur.idx] + weights[nbrs[i]];
+        float new_cost = costs[cur.idx] + weights[nbrs[i]] + dir_costs[i];
         if (new_cost < costs[nbrs[i]]) {
           // estimate the cost to the goal based on legal moves
           // Get the heuristic method to use
